@@ -105,7 +105,7 @@ This pipeline is built for resilience, fault tolerance, and complete observabili
 **1. Clone the repository:**
 
 ```bash
-git clone git@github.com:YourUsername/coinbase-data-pipeline.git
+git clone git@github.com:burhansyahid/coinbase-data-pipeline.git
 cd coinbase-data-pipeline
 
 ```
