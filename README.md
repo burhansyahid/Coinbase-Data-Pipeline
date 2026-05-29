@@ -13,6 +13,23 @@ An enterprise-grade, end-to-end Data Engineering and DevOps pipeline that ingest
 
 ---
 
+## 📊 Live System Proof
+
+Here is the pipeline running successfully in production, maintaining a zero-downtime streaming state and broadcasting live infrastructure telemetry:
+
+### 1. Real-Time Grafana Telemetry Dashboard
+*This live line-graph visualizes real-time market volatility and transaction ingestion throughput directly from the Coinbase WebSocket engine:*
+
+<img width="961" height="505" alt="Screenshot 2026-05-29 095111" src="https://github.com/user-attachments/assets/34c9f7ab-c949-46b0-9f37-991e4ccbe93e" />
+
+
+### 2. Containerized Microservice Topology (`docker ps`)
+*The entire pipeline running in isolated, self-healing Docker containers on an Oracle Cloud compute instance:*
+
+<img width="1103" height="121" alt="image" src="https://github.com/user-attachments/assets/98be3171-d263-4d71-9f36-5e26519d4143" />
+
+
+---
 ## 🏗️ Architecture & Data Flow
 
 ```mermaid
