@@ -1,0 +1,38 @@
+name: Production Python CI
+
+# Trigger this pipeline every time code is pushed to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    # GitHub will spin up a temporary Ubuntu Linux server for us
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Download your repository onto the temporary server
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. Install Python
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    # 3. Install your specific project dependencies
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8
+
+    # 4. Run the automated code checker
+    - name: Lint with Flake8
+      run: |
+        # This checks for fatal Python syntax errors and undefined names. 
+        # If it finds any, it will fail the build and email you an alert.
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
