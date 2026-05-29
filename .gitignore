@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.jsonl
+*.csv
+wallet/
+Wallet_*.zip

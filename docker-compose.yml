@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  ingestion-worker:
+    build: .
+    container_name: live-ingestion
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
