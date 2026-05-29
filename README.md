@@ -1,4 +1,3 @@
-cat << 'EOF' > README.md
 # 📈 Real-Time Cryptocurrency Data Pipeline & SRE Observability Stack
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
