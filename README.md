@@ -126,4 +126,3 @@ Navigate to `http://localhost:3005` in your browser (Default login: `admin` / `a
 ---
 
 *Built to demonstrate scalable Data Engineering, Cloud Infrastructure, and SRE best practices.*
-EOF
