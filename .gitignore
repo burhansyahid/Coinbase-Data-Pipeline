@@ -5,3 +5,4 @@ __pycache__/
 wallet/
 Wallet_*.zip
 pipeline.log
+.env

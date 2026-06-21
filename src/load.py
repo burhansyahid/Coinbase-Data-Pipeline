@@ -5,6 +5,14 @@ import os
 import sys
 import shutil
 
+=======
+DB_USER = os.environ.get("DB_USER", "ADMIN")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
+WALLET_PASSWORD = os.environ.get("WALLET_PASSWORD")
+DB_DSN = "coinbasegold_high"
+WALLET_DIR = "./wallet"
+SILVER_ARCHIVE_DIR = "data/_silver_archive"
+>>>>>>> 4727e13 (feat: update pipeline orchestration and core ingestion modules)
 
 def get_oldest_clean_file():
     """Finds clean tracking states sequentially to guarantee pipeline alignment."""
