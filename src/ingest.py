@@ -16,7 +16,7 @@ signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
 object_storage = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
 
 NAMESPACE = "axhrcbgwo7cd"
-BUCKET_NAME = "coinbase-bronze" [cite: 37]
+BUCKET_NAME = "coinbase-bronze"
 
 def upload_to_oci(filepath):
     """Uploads a completed JSONL file to the Oracle Cloud bucket."""
@@ -25,7 +25,7 @@ def upload_to_oci(filepath):
         with open(filepath, "rb") as f:
             object_storage.put_object(
                 namespace_name=NAMESPACE, bucket_name=BUCKET_NAME,
-                object_name=filename, put_object_body=f [cite: 39]
+                object_name=filename, put_object_body=f
             )
         print(f"System: Successfully uploaded {filename} to OCI.")
     except Exception as e:
@@ -39,37 +39,37 @@ def get_current_filename():
 
 def process_metrics_and_write(data, file_handle):
     """Parses live payloads, updates metrics, and commits to disk safely."""
-    if "events" in data: [cite: 44]
+    if "events" in data:
         for event in data["events"]:
-            if "tickers" in event: [cite: 45]
+            if "tickers" in event:
                 for ticker in event["tickers"]:
-                    TRADES_PROCESSED.inc() [cite: 46]
-                    CURRENT_BTC_PRICE.set(float(ticker['price'])) [cite: 46]
+                    TRADES_PROCESSED.inc()
+                    CURRENT_BTC_PRICE.set(float(ticker['price']))
                     
     # Atomic write to shared block volume storage
-    file_handle.write(json.dumps(data) + "\n") [cite: 47]
+    file_handle.write(json.dumps(data) + "\n")
     file_handle.flush()
 
 async def stream_market_data(websocket, subscribe_message):
     """Manages active streaming payloads and file rotations over an open socket session."""
-    await websocket.send(json.dumps(subscribe_message)) [cite: 41]
+    await websocket.send(json.dumps(subscribe_message))
     print("Producer: Subscribed to BTC-USD.")
 
-    current_filename = get_current_filename() [cite: 41]
+    current_filename = get_current_filename()
     file_handle = open(current_filename, "a")
 
     try:
         while True:
-            response = await websocket.recv() [cite: 41]
+            response = await websocket.recv()
             data = json.loads(response)
             
             # Smart File Rotation
-            new_filename = get_current_filename() [cite: 42]
-            if new_filename != current_filename: [cite: 42]
-                file_handle.close() [cite: 42]
-                upload_to_oci(current_filename) [cite: 43]
-                current_filename = new_filename [cite: 44]
-                file_handle = open(current_filename, "a") [cite: 44]
+            new_filename = get_current_filename()
+            if new_filename != current_filename:
+                file_handle.close()
+                upload_to_oci(current_filename)
+                current_filename = new_filename
+                file_handle = open(current_filename, "a")
 
             process_metrics_and_write(data, file_handle)
     finally:
@@ -77,10 +77,10 @@ async def stream_market_data(websocket, subscribe_message):
 
 async def subscribe_to_coinbase():
     """Manages connection context states and triggers connection backoffs on failure."""
-    url = "wss://advanced-trade-ws.coinbase.com" [cite: 40]
-    subscribe_message = {"type": "subscribe", "product_ids": ["BTC-USD"], "channel": "ticker"} [cite: 40]
+    url = "wss://advanced-trade-ws.coinbase.com"
+    subscribe_message = {"type": "subscribe", "product_ids": ["BTC-USD"], "channel": "ticker"}
 
-    start_http_server(8000) [cite: 41]
+    start_http_server(8000)
     print("Producer: Prometheus Metrics server active on port 8000")
 
     # Outer loop handles continuous service re-entry upon failure
@@ -91,7 +91,7 @@ async def subscribe_to_coinbase():
                 await stream_market_data(websocket, subscribe_message)
         except (websockets.exceptions.ConnectionClosed, Exception) as e:
             print(f"Network Connection Disrupted: {e}. Re-establishing link in 5s...", file=sys.stderr)
-            await asyncio.sleep(5) [cite: 48]
+            await asyncio.sleep(5)
 
 if __name__ == "__main__":
     try:
