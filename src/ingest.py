@@ -16,7 +16,7 @@ signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
 object_storage = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
 
 NAMESPACE = "axhrcbgwo7cd"
-BUCKET_NAME = "coinbase-bronze"
+BUCKET_NAME = "Coinbase-stream-zone"
 
 def upload_to_oci(filepath):
     """Uploads a completed JSONL file to the Oracle Cloud bucket."""

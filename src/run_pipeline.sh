@@ -1,32 +1,20 @@
 #!/bin/bash
 
-# Navigate to the project root directory
+# 1. Force the script to drop into your absolute project root folder
 cd /home/opc/coinbase-pipeline
 
-# Securely inject local environment state into execution context
+# 2. Explicitly load the environment configuration file
 if [ -f .env ]; then
-    set -a
-    source .env
-    set +a
-else
-    echo "CRITICAL ERROR: .env resource file missing. Aborting execution pipeline." >&2
-    exit 1
+    export $(cat .env | xargs)
 fi
 
-# Activate the virtual environment
+# 3. Activate the local Python virtual environment
 source venv/bin/activate
 
 echo "=== Pipeline Execution Started: $(date) ==="
-
 echo "Running Silver Layer Transformation..."
-python src/transform.py
+python3 src/transform.py
 
-if [ $? -eq 0 ]; then
-    echo "Silver Layer Complete. Running Gold Layer Loader..."
-    python src/load.py
-else
-    echo "ERROR: Silver Layer transformation failed. Aborting database load." >&2
-    exit 1
-fi
-
+echo "Running Gold Layer Loader..."
+python3 src/load.py
 echo "=== Pipeline Execution Finished: $(date) ==="
