@@ -5,7 +5,6 @@ import os
 import sys
 import shutil
 
-=======
 DB_USER = os.environ.get("DB_USER", "ADMIN")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 WALLET_PASSWORD = os.environ.get("WALLET_PASSWORD")
