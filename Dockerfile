@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. Copy Code: Now copy our actual Python script into the container
-COPY ingest.py .
+COPY src/ingest.py .
 
 # 5. Environment Variables: Force Python to print logs immediately to the console 
 # without buffering them. This is critical for cloud monitoring (Grafana).

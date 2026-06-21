@@ -1,12 +1,11 @@
 global:
-  scrape_interval: 15s # How often to poll for metrics
+  scrape_interval: 15s
 
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  # We will hook this up to your Python script in the next step!
   - job_name: 'coinbase_ingestion'
     static_configs:
       - targets: ['live-ingestion:8000']

@@ -6,7 +6,9 @@ services:
     container_name: live-ingestion
     restart: unless-stopped
     ports:
-      - "8000:8000" # Opens a port so Prometheus can read the Python metrics
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
 
@@ -24,6 +26,6 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-      - "3005:3000" # Mapped to 3005 to avoid your Chromium container
+      - "3005:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin # Default password (change later)
+      - GF_SECURITY_ADMIN_PASSWORD=admin

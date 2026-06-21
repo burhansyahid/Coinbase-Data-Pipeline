@@ -4,3 +4,4 @@ __pycache__/
 *.csv
 wallet/
 Wallet_*.zip
+pipeline.log
