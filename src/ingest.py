@@ -38,15 +38,21 @@ def get_current_filename():
     return f"data/raw_trades_{now.strftime('%Y%m%d_%H')}.jsonl"
 
 def process_metrics_and_write(data, file_handle):
-    """Parses live payloads, updates metrics, and commits to disk safely."""
-    if "events" in data:
-        for event in data["events"]:
-            if "tickers" in event:
-                for ticker in event["tickers"]:
-                    TRADES_PROCESSED.inc()
-                    CURRENT_BTC_PRICE.set(float(ticker['price']))
-                    
-    # Atomic write to shared block volume storage
+    """Parses live payloads, updates metrics, and commits to disk safely without risking stream crashes."""
+    try:
+        if "events" in data:
+            for event in data["events"]:
+                for ticker in event.get("tickers", []):
+                    try:
+                        TRADES_PROCESSED.inc()
+                        if 'price' in ticker:
+                            CURRENT_BTC_PRICE.set(float(ticker['price']))
+                    except (ValueError, TypeError, KeyError) as row_err:
+                        print(f"Metrics Error: Skipping malformed ticker row: {row_err}", file=sys.stderr)
+    except Exception as tree_err:
+        print(f"Payload Error: Mismatched structural schema tree: {tree_err}", file=sys.stderr)
+   
+    # Guarantee local raw persistence regardless of metrics extraction health
     file_handle.write(json.dumps(data) + "\n")
     file_handle.flush()
 
@@ -63,7 +69,6 @@ async def stream_market_data(websocket, subscribe_message):
             response = await websocket.recv()
             data = json.loads(response)
             
-            # Smart File Rotation
             new_filename = get_current_filename()
             if new_filename != current_filename:
                 file_handle.close()
@@ -83,7 +88,6 @@ async def subscribe_to_coinbase():
     start_http_server(8000)
     print("Producer: Prometheus Metrics server active on port 8000")
 
-    # Outer loop handles continuous service re-entry upon failure
     while True:
         try:
             print("Producer: Launching connection attempt to Coinbase API...")

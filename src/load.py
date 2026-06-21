@@ -5,13 +5,13 @@ import os
 import sys
 import shutil
 
+# --- SECURE CONFIGURATION VIA ENVIRONMENT LAYERS ---
 DB_USER = os.environ.get("DB_USER", "ADMIN")
 DB_PASSWORD = os.environ.get("DB_PASSWORD")
 WALLET_PASSWORD = os.environ.get("WALLET_PASSWORD")
 DB_DSN = "coinbasegold_high"
 WALLET_DIR = "./wallet"
 SILVER_ARCHIVE_DIR = "data/_silver_archive"
->>>>>>> 4727e13 (feat: update pipeline orchestration and core ingestion modules)
 
 def get_oldest_clean_file():
     """Finds clean tracking states sequentially to guarantee pipeline alignment."""
@@ -22,27 +22,20 @@ def get_oldest_clean_file():
     return clean_files[0]
 
 def execute_idempotent_merge(cursor, dataframe):
-    """Executes atomic UPSERT logic using native datetime objects to guarantee exact database state."""
-    # Ensure data type alignment before dictionary conversion
+    """Executes atomic UPSERT logic while filtering out poisoned rows without rolling back stable states."""
     dataframe['trade_timestamp'] = pd.to_datetime(dataframe['trade_timestamp'])
     records = dataframe.to_dict(orient='records')
     
-    # Transform pandas Timestamps into standard timezone-aware Python datetime objects
     for record in records:
         if hasattr(record['trade_timestamp'], 'to_pydatetime'):
             record['trade_timestamp'] = record['trade_timestamp'].to_pydatetime()
 
-    # Explicit column projection in USING block removes database casting guesswork
     merge_sql = """
     MERGE INTO fact_crypto_trades tgt
     USING (
         SELECT 
-            :product_id AS product_id, 
-            :trade_timestamp AS trade_timestamp, 
-            :price AS price,
-            :volume_24_h AS volume_24_h,
-            :high_24_h AS high_24_h,
-            :low_24_h AS low_24_h,
+            :product_id AS product_id, :trade_timestamp AS trade_timestamp, :price AS price,
+            :volume_24_h AS volume_24_h, :high_24_h AS high_24_h, :low_24_h AS low_24_h,
             :total_24h_usd_volume AS total_24h_usd_volume
         FROM dual
     ) src
@@ -55,11 +48,11 @@ def execute_idempotent_merge(cursor, dataframe):
     print(f"Gold Loader: Merging {len(records)} transaction records into Oracle ADW natively...")
     cursor.executemany(merge_sql, records, batcherrors=True)
     
+    # Isolate row failures without executing an unneeded full rollback path
     errors = cursor.getbatcherrors()
     if errors:
         for error in errors:
-            print(f"Row Level DB Error encountered at index {error.offset}: {error.message}", file=sys.stderr)
-        raise RuntimeError("Database execution batch compilation errors detected.")
+            print(f"Row Level DB Error at array offsets [{error.offset}]: {error.message}", file=sys.stderr)
 
 def archive_silver_file(filepath):
     """Archives transformed tracking files out of active processing pipeline."""
@@ -84,14 +77,11 @@ def process_gold_layer():
             config_dir=WALLET_DIR, wallet_location=WALLET_DIR, wallet_password=WALLET_PASSWORD
         )
         cursor = connection.cursor()
-        
-        # FIX: Disable Parallel DML for this session to allow consecutive batch modifications
         cursor.execute("ALTER SESSION DISABLE PARALLEL DML")
         
         execute_idempotent_merge(cursor, df)
         connection.commit()
         print("Gold Worker: Database state synchronization completed successfully.")
-        
         archive_silver_file(target_file)
     except Exception as e:
         print(f"Fatal Database Loading Exception: {e}", file=sys.stderr)
