@@ -5,12 +5,6 @@ import os
 import sys
 import shutil
 
-DB_USER = "ADMIN"
-DB_PASSWORD = "Preman901202!"
-WALLET_PASSWORD = "Preman901202!"
-DB_DSN = "coinbasegold_high"
-WALLET_DIR = "./wallet"
-SILVER_ARCHIVE_DIR = "data/_silver_archive"
 
 def get_oldest_clean_file():
     """Finds clean tracking states sequentially to guarantee pipeline alignment."""
